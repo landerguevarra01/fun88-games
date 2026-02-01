@@ -11,6 +11,7 @@ import GameGrid from "./components/GameGrid";
 import Navbar from "./components/Navbar";
 import HeroCarousel from "./components/HeroCarousel";
 import ProvidersGrid from "./components/ProvidersGrid";
+import ProvidersFilterModal from "./components/ProvidersFilterModal";
 import CategoryGrid from "./components/CategoryGrid";
 import About from "./components/About";
 import Footer from "./components/Footer";
@@ -21,46 +22,61 @@ export default function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  // ✅ SINGLE provider only
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("15665"); // INICIO by default
+
+  // ✅ SINGLE category only
+  const [selectedCategory, setSelectedCategory] = useState<string>("15665");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingGames, setLoadingGames] = useState(false);
   const [errorGames, setErrorGames] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [totalGames, setTotalGames] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>(""); // search term
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch providers & categories once
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  /* ---------------- FETCH STATIC DATA ---------------- */
+
   useEffect(() => {
     fetchProviders().then(setProviders).catch(console.error);
 
     fetchCategories()
       .then((cats) => {
         setCategories(cats);
-        // Auto-select INICIO if exists
         const inicio = cats.find((c) => c.id === "15665");
         if (inicio) setSelectedCategory(inicio.id);
       })
       .catch(console.error);
   }, []);
 
-  // Load games whenever provider OR category changes
-  useEffect(() => {
-    if (!selectedCategory) return;
+  /* ---------------- MUTUAL EXCLUSIVE HANDLERS ---------------- */
 
-    // Reset state
+  function handleSelectProvider(provider: string | null) {
+    setSelectedProvider(provider);
+    setSelectedCategory("15665"); // reset category
+  }
+
+  function handleSelectCategory(categoryId: string) {
+    setSelectedCategory(categoryId);
+    setSelectedProvider(null); // reset provider
+  }
+
+  /* ---------------- FETCH GAMES ---------------- */
+
+  useEffect(() => {
     setGames([]);
     setCurrentPage(1);
     setHasMore(true);
     setTotalGames(null);
     setErrorGames(null);
-    setSearchTerm(""); // clear search when category/provider changes
+    setSearchTerm("");
 
-    // Fetch first page immediately
     fetchGamesForCategory(1, selectedProvider || "", selectedCategory);
   }, [selectedProvider, selectedCategory]);
 
-  // Function to fetch games for a category (first page or "Load More")
   async function fetchGamesForCategory(
     page: number,
     provider: string,
@@ -69,7 +85,6 @@ export default function App() {
     if (loadingGames) return;
 
     setLoadingGames(true);
-    setErrorGames(null);
 
     try {
       const { games: newGames, total } = await fetchGames(
@@ -90,27 +105,28 @@ export default function App() {
         setHasMore(false);
       } else {
         setCurrentPage(page + 1);
-        setHasMore(true);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setErrorGames("Failed to load games.");
     } finally {
       setLoadingGames(false);
     }
   }
 
-  // Compute games displayed based on search
+  /* ---------------- SEARCH ---------------- */
+
   const displayedGames = useMemo(() => {
     if (!searchTerm) return games;
-    return games.filter((game) =>
-      game.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    return games.filter((g) =>
+      g.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [games, searchTerm]);
 
   const loadedCount = displayedGames.length;
   const totalCount = totalGames ?? 8918;
   const progress = Math.min(Math.round((loadedCount / totalCount) * 100), 100);
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="bg-white">
@@ -124,14 +140,26 @@ export default function App() {
         <ProvidersGrid
           providers={providers}
           selectedProvider={selectedProvider}
-          onSelectProvider={setSelectedProvider}
+          onSelectProvider={handleSelectProvider}
         />
 
         <CategoryGrid
           categories={categories}
           selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-          onSearch={setSearchTerm} // updated search
+          onSelectCategory={handleSelectCategory}
+          onSearch={setSearchTerm}
+          onOpenFilter={() => setFilterOpen(true)}
+        />
+
+        <ProvidersFilterModal
+          open={filterOpen}
+          providers={providers}
+          selectedProvider={selectedProvider}
+          onApply={(provider) => {
+            handleSelectProvider(provider);
+            setFilterOpen(false);
+          }}
+          onClose={() => setFilterOpen(false)}
         />
       </div>
 
@@ -146,15 +174,15 @@ export default function App() {
               {loadedCount} / {totalCount} ({progress}%)
             </div>
 
-            <div className="w-[320px] h-2 bg-zinc-200 rounded-full overflow-hidden">
+            <div className="w-[320px] h-2 bg-zinc-200 rounded-full">
               <div
-                className="h-full bg-yellow-400 transition-all duration-300"
+                className="h-full bg-yellow-400"
                 style={{ width: `${progress}%` }}
               />
             </div>
 
             <button
-              className="mt-2 px-5 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
+              className="mt-2 px-5 py-2 bg-gray-300 rounded"
               onClick={() =>
                 fetchGamesForCategory(
                   currentPage,
@@ -162,7 +190,6 @@ export default function App() {
                   selectedCategory,
                 )
               }
-              disabled={loadingGames}
             >
               Load More
             </button>
@@ -172,6 +199,7 @@ export default function App() {
         {loadingGames && (
           <div className="p-10 text-zinc-400">Loading games…</div>
         )}
+
         {!hasMore && !loadingGames && (
           <div className="text-center text-zinc-400 mt-6">All games loaded</div>
         )}

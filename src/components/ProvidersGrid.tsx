@@ -80,13 +80,6 @@ export default function ProvidersGrid({
           >
             ▶
           </button>
-          <button
-            type="button"
-            onClick={() => onSelectProvider(null)}
-            className="px-3 py-1 text-sm rounded bg-zinc-200 hover:bg-zinc-300"
-          >
-            All
-          </button>
         </div>
       </div>
 
@@ -104,11 +97,13 @@ export default function ProvidersGrid({
               selectedProvider &&
               provider.name.toLowerCase().trim() ===
                 selectedProvider.toLowerCase().trim();
+
             return (
               <div
                 key={`${provider.name}-${i}`}
                 className="w-1/6 px-2 shrink-0 cursor-pointer"
                 onClick={() =>
+                  // ✅ SINGLE SELECT: if already selected, deselect; else select
                   onSelectProvider(isSelected ? null : provider.name)
                 }
               >
