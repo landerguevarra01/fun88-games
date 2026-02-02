@@ -6,4 +6,5 @@ export interface Category {
   icon_off?: string;
   providers: Record<string, number>;
   count: number;
+  favoritesCategoryId?: string;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchGames } from "./api/fetchGames";
 import { fetchProviders } from "./api/fetchProviders";
 import { fetchCategories } from "./api/fetchCategory";
@@ -17,17 +17,17 @@ import About from "./components/About";
 import Footer from "./components/Footer";
 
 const GAMES_PER_PAGE = 45;
+const FAVORITES_CATEGORY_ID = "favorites";
 
 export default function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // ✅ SINGLE provider only
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
-
-  // ✅ SINGLE category only
   const [selectedCategory, setSelectedCategory] = useState<string>("15665");
+
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingGames, setLoadingGames] = useState(false);
@@ -38,7 +38,32 @@ export default function App() {
 
   const [filterOpen, setFilterOpen] = useState(false);
 
-  /* ---------------- FETCH STATIC DATA ---------------- */
+  /* ---------- FAVORITES PERSISTENCE ---------- */
+
+  useEffect(() => {
+    const saved = localStorage.getItem("favorites");
+    if (saved) setFavorites(new Set(JSON.parse(saved)));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify([...favorites]));
+  }, [favorites]);
+
+  function toggleFavorite(gameId: string) {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(gameId)) {
+        next.delete(gameId);
+      } else {
+        next.add(gameId);
+      }
+
+      return next;
+    });
+  }
+
+  /* ---------- FETCH STATIC DATA ---------- */
 
   useEffect(() => {
     fetchProviders().then(setProviders).catch(console.error);
@@ -52,21 +77,45 @@ export default function App() {
       .catch(console.error);
   }, []);
 
-  /* ---------------- MUTUAL EXCLUSIVE HANDLERS ---------------- */
+  /* ---------- CATEGORIES (WITH FAVORITES) ---------- */
+
+  const categoriesWithFavorites: Category[] = useMemo(() => {
+    return [
+      {
+        id: FAVORITES_CATEGORY_ID,
+        category: "Favorites",
+        icon_active: "", // placeholder string, unused
+        icon_light: "", // placeholder string, unused
+        providers: {},
+        count: favorites.size,
+      },
+      ...categories,
+    ];
+  }, [categories, favorites]);
+
+  /* ---------- HANDLERS ---------- */
 
   function handleSelectProvider(provider: string | null) {
     setSelectedProvider(provider);
-    setSelectedCategory("15665"); // reset category
+    setSelectedCategory("15665");
   }
 
   function handleSelectCategory(categoryId: string) {
     setSelectedCategory(categoryId);
-    setSelectedProvider(null); // reset provider
+    setSelectedProvider(null);
   }
 
-  /* ---------------- FETCH GAMES ---------------- */
+  /* ---------- FETCH GAMES ---------- */
 
   useEffect(() => {
+    if (selectedCategory === FAVORITES_CATEGORY_ID) {
+      // Do not clear games — keep already loaded games
+      setHasMore(false); // no pagination
+      setErrorGames(null); // clear any previous error
+      return; // skip fetching
+    }
+
+    // Reset state for other categories
     setGames([]);
     setCurrentPage(1);
     setHasMore(true);
@@ -95,11 +144,9 @@ export default function App() {
 
       if (total && totalGames === null) setTotalGames(total);
 
-      if (page === 1) {
-        setGames(newGames.slice(0, GAMES_PER_PAGE));
-      } else {
-        setGames((prev) => [...prev, ...newGames]);
-      }
+      setGames((prev) =>
+        page === 1 ? newGames.slice(0, GAMES_PER_PAGE) : [...prev, ...newGames],
+      );
 
       if (newGames.length < GAMES_PER_PAGE) {
         setHasMore(false);
@@ -113,20 +160,36 @@ export default function App() {
     }
   }
 
-  /* ---------------- SEARCH ---------------- */
+  /* ---------- DISPLAYED GAMES ---------- */
 
   const displayedGames = useMemo(() => {
-    if (!searchTerm) return games;
-    return games.filter((g) =>
-      g.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [games, searchTerm]);
+    let baseGames =
+      selectedCategory === FAVORITES_CATEGORY_ID
+        ? games.filter((g) => favorites.has(g.id))
+        : games;
+
+    if (searchTerm) {
+      baseGames = baseGames.filter((g) =>
+        g.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    }
+
+    return [...baseGames].sort((a, b) => {
+      const aFav = favorites.has(a.id);
+      const bFav = favorites.has(b.id);
+      return aFav === bFav ? 0 : aFav ? -1 : 1;
+    });
+  }, [games, favorites, searchTerm, selectedCategory]);
+
+  const totalCount =
+    selectedCategory === FAVORITES_CATEGORY_ID
+      ? favorites.size
+      : (totalGames ?? 8918);
 
   const loadedCount = displayedGames.length;
-  const totalCount = totalGames ?? 8918;
   const progress = Math.min(Math.round((loadedCount / totalCount) * 100), 100);
 
-  /* ---------------- UI ---------------- */
+  /* ---------- UI ---------- */
 
   return (
     <div className="bg-white">
@@ -139,16 +202,19 @@ export default function App() {
       <div className="px-[90px] pt-6">
         <ProvidersGrid
           providers={providers}
-          selectedProvider={selectedProvider}
+          selectedProvider={
+            selectedCategory === FAVORITES_CATEGORY_ID ? null : selectedProvider
+          }
           onSelectProvider={handleSelectProvider}
         />
 
         <CategoryGrid
-          categories={categories}
+          categories={categoriesWithFavorites}
           selectedCategory={selectedCategory}
           onSelectCategory={handleSelectCategory}
           onSearch={setSearchTerm}
           onOpenFilter={() => setFilterOpen(true)}
+          favoritesCategoryId={FAVORITES_CATEGORY_ID} // <-- pass it here
         />
 
         <ProvidersFilterModal
@@ -164,9 +230,19 @@ export default function App() {
       </div>
 
       <div className="min-h-screen px-[150px] py-[10px]">
-        <GameGrid games={displayedGames} />
+        <GameGrid
+          games={displayedGames}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
+          isFavoritesView={selectedCategory === FAVORITES_CATEGORY_ID}
+        />
 
-        {errorGames && <div className="p-10 text-red-500">{errorGames}</div>}
+        {/* Error message */}
+        {errorGames && (
+          <div className="p-6 text-center text-red-500 font-medium">
+            {errorGames}
+          </div>
+        )}
 
         {!loadingGames && hasMore && (
           <div className="mt-6 flex flex-col items-center gap-3">
@@ -182,7 +258,7 @@ export default function App() {
             </div>
 
             <button
-              className="mt-2 px-5 py-2 bg-gray-300 rounded"
+              className="mt-2 px-5 py-2 bg-[#00A6FF] text-white rounded"
               onClick={() =>
                 fetchGamesForCategory(
                   currentPage,
@@ -198,10 +274,6 @@ export default function App() {
 
         {loadingGames && (
           <div className="p-10 text-zinc-400">Loading games…</div>
-        )}
-
-        {!hasMore && !loadingGames && (
-          <div className="text-center text-zinc-400 mt-6">All games loaded</div>
         )}
       </div>
 

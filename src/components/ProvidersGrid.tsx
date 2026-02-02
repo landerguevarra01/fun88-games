@@ -69,14 +69,14 @@ export default function ProvidersGrid({
           <button
             type="button"
             onClick={prev}
-            className="px-3 py-1 text-sm rounded bg-zinc-200 hover:bg-zinc-300"
+            className="px-3 py-1 text-sm rounded bg-zinc-200 hover:bg-zinc-300 cursor-pointer"
           >
             ◀
           </button>
           <button
             type="button"
             onClick={next}
-            className="px-3 py-1 text-sm rounded bg-zinc-200 hover:bg-zinc-300"
+            className="px-3 py-1 text-sm rounded bg-zinc-200 hover:bg-zinc-300 cursor-pointer"
           >
             ▶
           </button>

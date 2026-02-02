@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "../types/Category";
 
+import { FaFilter } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
+
 interface Props {
   categories: Category[];
   selectedCategory: string | null;
   onSelectCategory: (categoryId: string) => void;
   onSearch: (searchTerm: string) => void;
   onOpenFilter: () => void;
+  favoritesCategoryId?: string;
 }
 
 export default function CategoryGrid({
@@ -15,6 +19,7 @@ export default function CategoryGrid({
   onSelectCategory,
   onSearch,
   onOpenFilter,
+  favoritesCategoryId,
 }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -77,18 +82,27 @@ export default function CategoryGrid({
               <button
                 key={cat.id}
                 onClick={() => onSelectCategory(cat.id)}
-                className={`flex flex-col items-center gap-2 px-3 py-2 rounded-lg transition shrink-0
+                className={`flex flex-col items-center gap-2 px-3 py-2 rounded-lg transition shrink-0 cursor-pointer
                   ${
                     isActive
                       ? "bg-yellow-400 text-black"
                       : "bg-transparent hover:bg-zinc-100"
                   }`}
               >
-                <img
-                  src={isActive ? cat.icon_active : cat.icon_light}
-                  alt={cat.category}
-                  className="w-10 h-10 object-contain"
-                />
+                <div className="w-10 h-10 flex items-center justify-center">
+                  {cat.id === favoritesCategoryId ? (
+                    <FaStar
+                      className={`w-8 h-8 ${isActive ? "text-[#00A6FF]" : "text-zinc-400"}`}
+                    />
+                  ) : (
+                    <img
+                      src={isActive ? cat.icon_active : cat.icon_light}
+                      alt={cat.category}
+                      className="w-10 h-10 object-contain"
+                    />
+                  )}
+                </div>
+
                 <span className="text-xs font-semibold uppercase">
                   {cat.category}
                 </span>
@@ -128,11 +142,10 @@ export default function CategoryGrid({
         <button
           type="button"
           onClick={() => onOpenFilter()}
-          className="px-3 py-2 rounded-lg border border-zinc-300 bg-white
-               hover:bg-zinc-100 flex items-center gap-1"
+          className="p-3 rounded-lg border border-zinc-300 bg-white
+               hover:bg-zinc-100 flex items-center gap-1 cursor-pointer"
         >
-          🔍
-          <span className="text-sm font-medium">Filter</span>
+          <FaFilter />
         </button>
       </div>
     </div>

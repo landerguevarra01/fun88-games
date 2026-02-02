@@ -1,4 +1,4 @@
-// lib/fetchProviders.ts
+// api/fetchProviders.ts
 import type {
   Provider,
   ProviderApiItem,
