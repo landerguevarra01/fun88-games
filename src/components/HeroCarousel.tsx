@@ -40,7 +40,6 @@ export default function HeroCarousel() {
     loop: true,
   });
 
-  // Optional auto-scroll
   useEffect(() => {
     if (!emblaApi) return;
 

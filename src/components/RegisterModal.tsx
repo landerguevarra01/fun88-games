@@ -10,7 +10,7 @@ interface FavoritesModalProps {
   onToggleFavorite?: (id: string) => void;
 }
 
-// Only the two images you need
+
 const slides = [
   {
     href: "https://www.fun88.mx/promotions/364-gana-hasta-500",
@@ -41,7 +41,7 @@ export default function FavoritesModal({ open, onClose }: FavoritesModalProps) {
       onClick={onClose}
     >
       <div
-        className="relative bg-[#F2F2FA] w-full max-w-[400px] xs:max-w-[calc(100%-32px)] rounded-[10px] overflow-y-auto max-h-[calc(100vh-32px)] !pt-5 !pb-[15px] !px-3 xs:!px-5"
+        className="relative bg-[#F2F2FA] w-full max-w-[400px] xs:max-w-[calc(100%-32px)] rounded-[10px] overflow-y-auto overflow-x-hidden max-h-[calc(100vh-32px)] !pt-5 !pb-[15px] !px-3 xs:!px-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

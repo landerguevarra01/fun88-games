@@ -57,10 +57,9 @@ export default function App() {
         return;
       }
 
-      const navbarHeight = 56; // adjust if needed
+      const navbarHeight = 56;
       const rect = categoryRef.current.getBoundingClientRect();
 
-      // When category reaches navbar
       setIsCategoryFixed(rect.top <= navbarHeight);
     };
 
@@ -112,8 +111,8 @@ export default function App() {
       {
         id: FAVORITES_CATEGORY_ID,
         category: "Favorites",
-        icon_active: "", // placeholder string, unused
-        icon_light: "", // placeholder string, unused
+        icon_active: "",
+        icon_light: "",
         providers: {},
         count: favorites.size,
       },
@@ -232,7 +231,7 @@ export default function App() {
   return (
     <div className="bg-white">
       {!fullscreen && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+        <div className="fixed top-0 left-0 right-0 z-9999 bg-white shadow-sm">
           <Navbar
             categories={categoriesWithFavorites}
             selectedCategory={selectedCategory}
@@ -343,7 +342,7 @@ export default function App() {
       <Footer />
 
       {/* for mobile navbar */}
-      <div className="md:hidden w-full h-12 fixed bottom-0 md:bottom-5 z-[204] flex items-center px-2">
+      <div className="md:hidden w-full h-12 fixed bottom-0 md:bottom-5 z-[204] flex items-center">
         {/* Normal mode: all buttons, original layout */}
         {!fullscreen && (
           <div className="flex justify-between w-full bg-white px-3">

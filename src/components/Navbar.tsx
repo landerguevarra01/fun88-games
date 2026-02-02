@@ -66,7 +66,7 @@ export default function Navbar({
         {/* Left: Burger + Logo */}
         <div className="flex items-center gap-3">
           <button onClick={() => setIsMobileOpen(true)}>
-            <FaBars className="w-6 h-6" />
+            <FaBars className="w-6 h-6 text-[#00A6FF]" />
           </button>
           <img
             src="https://sfgdefe0923.fun88adrods.online/mexicoimages/logo/dark.webp"
@@ -88,29 +88,15 @@ export default function Navbar({
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 left-0 z-50 h-screen w-[300px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 z-999 h-screen w-[300px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
-        {/* Close button */}
-        {/* <div className="flex justify-end p-4">
-          <button onClick={() => setIsMobileOpen(false)}>
-            <FaTimes className="w-6 h-6" />
-          </button>
-        </div> */}
-
         {/* Mobile Sidebar */}
         <div
-          className={`fixed top-0 left-0 z-50 h-screen w-[300px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+          className={`fixed top-0 left-0 z-9999 h-screen w-[300px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out
   ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="h-full overflow-y-auto flex flex-col justify-start">
-            {/* Close button */}
-            {/* <div className="flex justify-end p-4">
-              <button onClick={() => setIsMobileOpen(false)}>
-                <FaTimes className="w-6 h-6" />
-              </button>
-            </div> */}
-
             <div className="px-5 py-10 text-[#00A6FF]">
               <p className="uppercase text-base mb-6">Bienvenido!</p>
 

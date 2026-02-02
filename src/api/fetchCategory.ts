@@ -2,7 +2,7 @@
 import type { Category } from "../types/Category";
 
 interface ApiCategoryItem {
-  id: string; // <- added this
+  id: string;
   category: string;
   icon_active: string;
   icon_light: string;

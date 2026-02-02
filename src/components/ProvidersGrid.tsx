@@ -1,4 +1,3 @@
-// components/ProvidersGrid.tsx
 import { useEffect, useRef, useState } from "react";
 import type { Provider } from "../types/Providers";
 
@@ -16,16 +15,16 @@ export default function ProvidersGrid({
   onSelectProvider,
 }: Props) {
   const [index, setIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(6); // default desktop
+  const [visibleCount, setVisibleCount] = useState(6); 
   const trackRef = useRef<HTMLDivElement>(null);
 
   // Update visible count on resize
   useEffect(() => {
     const handleResize = () => {
-      setVisibleCount(window.innerWidth < 768 ? 3 : 6); // mobile <768px: 3, else 6
+      setVisibleCount(window.innerWidth < 768 ? 3 : 6); 
     };
 
-    handleResize(); // initial
+    handleResize(); 
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
