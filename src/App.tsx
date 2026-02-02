@@ -257,11 +257,19 @@ export default function App() {
         />
 
         <div ref={categoryRef}>
+          {/* Placeholder to avoid layout shift */}
+          {isCategoryFixed && (
+            <div style={{ height: categoryRef.current?.offsetHeight }} />
+          )}
+
           <div
             className={`
-      ${isCategoryFixed ? "fixed top-[56px] left-0 right-0 z-40 shadow-md" : "relative"}
+      ${isCategoryFixed ? "fixed left-0 right-0 z-40 shadow-md" : "relative"}
       bg-white pb-2
     `}
+            style={{
+              top: isCategoryFixed ? (fullscreen ? 0 : 56) : undefined,
+            }}
           >
             <div className="px-4 md:px-0">
               <CategoryGrid
