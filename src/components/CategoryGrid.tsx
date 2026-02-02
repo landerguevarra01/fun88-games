@@ -92,7 +92,7 @@ export default function CategoryGrid({
                   className={`flex flex-col items-center gap-2 px-3 py-2 rounded-lg transition shrink-0 cursor-pointer
                     ${
                       isActive
-                        ? "bg-yellow-400 text-black"
+                        ? "border-b border-[#00A6FF] text-[#00A6FF]"
                         : "bg-transparent hover:bg-zinc-100"
                     }`}
                 >

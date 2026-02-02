@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { fetchGames } from "./api/fetchGames";
 import { fetchProviders } from "./api/fetchProviders";
 import { fetchCategories } from "./api/fetchCategory";
@@ -15,6 +15,7 @@ import ProvidersFilterModal from "./components/ProvidersFilterModal";
 import CategoryGrid from "./components/CategoryGrid";
 import About from "./components/About";
 import Footer from "./components/Footer";
+import FavoritesModal from "./components/RegisterModal";
 
 const GAMES_PER_PAGE = 45;
 const FAVORITES_CATEGORY_ID = "favorites";
@@ -38,7 +39,34 @@ export default function App() {
 
   const [filterOpen, setFilterOpen] = useState(false);
 
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const [isCategoryFixed, setIsCategoryFixed] = useState(false);
+
+  const [favoritesModalOpen, setFavoritesModalOpen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+
   /* ---------- FAVORITES PERSISTENCE ---------- */
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!categoryRef.current) return;
+
+      // Mobile only
+      if (window.innerWidth >= 768) {
+        setIsCategoryFixed(false);
+        return;
+      }
+
+      const navbarHeight = 56; // adjust if needed
+      const rect = categoryRef.current.getBoundingClientRect();
+
+      // When category reaches navbar
+      setIsCategoryFixed(rect.top <= navbarHeight);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("favorites");
@@ -189,15 +217,32 @@ export default function App() {
   const loadedCount = displayedGames.length;
   const progress = Math.min(Math.round((loadedCount / totalCount) * 100), 100);
 
+  function handleReloadGames() {
+    // Reset state for the current category/provider
+    setGames([]);
+    setCurrentPage(1);
+    setHasMore(true);
+    setErrorGames(null);
+
+    fetchGamesForCategory(1, selectedProvider || "", selectedCategory);
+  }
+
   /* ---------- UI ---------- */
 
   return (
     <div className="bg-white">
-      <Navbar
-        categories={categoriesWithFavorites}
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleSelectCategory}
-      />
+      {!fullscreen && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+          <Navbar
+            categories={categoriesWithFavorites}
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleSelectCategory}
+          />
+        </div>
+      )}
+
+      {/* Spacer for fixed navbar */}
+      <div className="h-[56px]" />
 
       <div className="md:px-[90px] pt-[16px]">
         <HeroCarousel />
@@ -212,14 +257,27 @@ export default function App() {
           onSelectProvider={handleSelectProvider}
         />
 
-        <CategoryGrid
-          categories={categoriesWithFavorites}
-          selectedCategory={selectedCategory}
-          onSelectCategory={handleSelectCategory}
-          onSearch={setSearchTerm}
-          onOpenFilter={() => setFilterOpen(true)}
-          favoritesCategoryId={FAVORITES_CATEGORY_ID} // <-- pass it here
-        />
+        <div ref={categoryRef} className="h-[140px] md:h-auto">
+          <div
+            className={`
+      ${isCategoryFixed ? "fixed" : "relative"}
+      ${isCategoryFixed ? `top-${fullscreen ? "0" : "[56px]"} left-0 right-0 z-40` : ""}
+      md:relative md:top-0
+      bg-white pb-2
+    `}
+          >
+            <div className="px-4 md:px-0">
+              <CategoryGrid
+                categories={categoriesWithFavorites}
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleSelectCategory}
+                onSearch={setSearchTerm}
+                onOpenFilter={() => setFilterOpen(true)}
+                favoritesCategoryId={FAVORITES_CATEGORY_ID}
+              />
+            </div>
+          </div>
+        </div>
 
         <ProvidersFilterModal
           open={filterOpen}
@@ -233,7 +291,7 @@ export default function App() {
         />
       </div>
 
-      <div className="min-h-screen md:px-[150px] py-[10px]">
+      <div className="min-h-screen md:px-[150px] py-8">
         <GameGrid
           games={displayedGames}
           favorites={favorites}
@@ -283,6 +341,137 @@ export default function App() {
 
       <About />
       <Footer />
+
+      {/* for mobile navbar */}
+      <div className="md:hidden w-full h-12 fixed bottom-0 md:bottom-5 z-[204] flex items-center px-2">
+        {/* Normal mode: all buttons, original layout */}
+        {!fullscreen && (
+          <div className="flex justify-between w-full bg-white px-3">
+            <div className="w-fit h-auto flex flex-col justify-center items-center p-2">
+              <img
+                src="/assets/navbar/balldark.webp"
+                alt=""
+                className="w-5 h-auto"
+              />
+              <p className="uppercase text-[10px]">Deportes</p>
+            </div>
+
+            <div
+              className="w-fit h-auto flex flex-col justify-center items-center p-2"
+              onClick={() => setFavoritesModalOpen(true)}
+            >
+              <img
+                src="/assets/navbar/star.webp"
+                alt=""
+                className="w-5 h-auto"
+              />
+              <p className="uppercase text-[10px]">Favoritos</p>
+            </div>
+
+            <div
+              className="w-fit h-auto flex flex-col justify-center items-center p-2"
+              onClick={() => setFavoritesModalOpen(true)}
+            >
+              <img
+                src="/assets/navbar/time.webp"
+                alt=""
+                className="w-5 h-auto"
+              />
+              <p className="uppercase text-[10px]">Recientes</p>
+            </div>
+
+            <div
+              className="w-fit h-auto flex flex-col justify-center items-center p-2"
+              onClick={handleReloadGames}
+            >
+              <img
+                src="/assets/navbar/dicelight.webp"
+                alt=""
+                className="w-5 h-auto"
+              />
+              <p className="uppercase text-[10px] text-[#00A6FF]">Casino</p>
+            </div>
+
+            {/* Expandir button at the end */}
+            <div
+              className="w-fit h-auto flex flex-col justify-center items-center p-2"
+              onClick={() => setFullscreen(true)}
+            >
+              <img
+                src="/assets/navbar/expand.webp"
+                alt=""
+                className="w-5 h-auto"
+              />
+              <p className="uppercase text-[10px] text-[#00A6FF]">Expandir</p>
+            </div>
+          </div>
+        )}
+
+        {/* Fullscreen mode: only Expandir/Contraer button visible, bg transparent */}
+        {fullscreen && (
+          <div
+            className="w-fit h-auto flex flex-col justify-center items-center pr-5 absolute right-0 bg-transparent"
+            onClick={() => setFullscreen(false)}
+          >
+            <img
+              src="/assets/navbar/expand.webp"
+              alt=""
+              className="w-5 h-auto"
+            />
+            <p className="uppercase text-[10px] text-[#00A6FF]">Contraer</p>
+          </div>
+        )}
+      </div>
+
+      <div className="fixed bottom-16 md:bottom-5 right-5 z-[204] flex flex-col gap-4">
+        <a
+          href="https://t.me/FUN88Mexico"
+          target="_blank"
+          aria-label="Join telegram channel"
+          className="cursor-pointer transition-all duration-200 ease-in-out
+        flex hover:scale-105"
+        >
+          <img
+            className="pointer-events-none w-[50px] aspect-[156_/_163]"
+            src="/assets/float/telefloat.webp"
+            alt="Join telegram channel"
+          />
+        </a>
+        <a
+          href="https://t.me/FUN88Mexico"
+          target="_blank"
+          aria-label="Join telegram channel"
+          className="cursor-pointer transition-all duration-200 ease-in-out
+        flex hover:scale-105"
+        >
+          <img
+            className="pointer-events-none w-[50px] aspect-[156_/_163]"
+            src="https://www.fun88.mx/assets/message-2af5cf85.svg"
+            alt="Join telegram channel"
+          />
+        </a>
+        <a
+          href="https://t.me/FUN88Mexico"
+          target="_blank"
+          aria-label="Join telegram channel"
+          className="cursor-pointer transition-all duration-200 ease-in-out
+        flex hover:scale-105"
+        >
+          <img
+            className="pointer-events-none w-[50px] aspect-[156_/_163]"
+            src="/assets/float/catfloat.webp"
+            alt="Join telegram channel"
+          />
+        </a>
+      </div>
+
+      <FavoritesModal
+        open={favoritesModalOpen}
+        onClose={() => setFavoritesModalOpen(false)}
+        favorites={favorites}
+        games={games}
+        onToggleFavorite={toggleFavorite}
+      />
     </div>
   );
 }

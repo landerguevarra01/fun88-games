@@ -540,7 +540,7 @@ export default function Footer() {
             className="w-auto h-[33px] xl:h-[45px]"
           />
         </div>
-        <p className="mb-4 text-center">
+        <p className="mb-4 text-center text-[14px] px-4">
           WWW.FUN88MX.MX OPERADA EN MEXICO POR PRODUCCIONES MÓVILES S.A. DE
           C.V., TITULAR DEL PERMISO DGAJS/SCEVF/P-06/2005-TER EN UNIÓN DE
           UNOCAPALI LA PAZ OPERADORA S.A. DE C.V. DE CONFORMIDAD CON LOS OFICIOS
