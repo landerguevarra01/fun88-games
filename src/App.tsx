@@ -256,12 +256,10 @@ export default function App() {
           onSelectProvider={handleSelectProvider}
         />
 
-        <div ref={categoryRef} className="h-[140px] md:h-auto">
+        <div ref={categoryRef}>
           <div
             className={`
-      ${isCategoryFixed ? "fixed" : "relative"}
-      ${isCategoryFixed ? `top-${fullscreen ? "0" : "[56px]"} left-0 right-0 z-40` : ""}
-      md:relative md:top-0
+      ${isCategoryFixed ? "fixed top-[56px] left-0 right-0 z-40 shadow-md" : "relative"}
       bg-white pb-2
     `}
           >
