@@ -51,7 +51,7 @@ export default function GameGrid({
                 <img
                   src={game.imgURL}
                   alt={game.name}
-                  className="w-full aspect-[16/10] object-cover"
+                  className="w-full aspect-[10/10] object-cover"
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                   <button className="px-5 py-2 text-sm font-semibold text-black bg-yellow-400 rounded-full cursor-pointer">
@@ -60,7 +60,7 @@ export default function GameGrid({
                 </div>
               </div>
 
-              <div className="p-3">
+              {/* <div className="p-3">
                 <h3 className="text-sm font-semibold text-white truncate">
                   {game.name}
                 </h3>
@@ -73,7 +73,7 @@ export default function GameGrid({
                   />
                   {game.platform}
                 </div>
-              </div>
+              </div> */}
             </div>
           );
         })}
