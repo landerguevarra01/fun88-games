@@ -59,7 +59,7 @@ export default function HeroCarousel() {
             <a
               key={index}
               href={slide.href}
-              className="flex-[0_0_100%] aspect-[2/1] xl:aspect-[5/1]"
+              className="flex-[0_0_100%] aspect-[3/1] xl:aspect-[5/1]"
             >
               <img
                 src={slide.img}

@@ -193,13 +193,17 @@ export default function App() {
 
   return (
     <div className="bg-white">
-      <Navbar />
+      <Navbar
+        categories={categoriesWithFavorites}
+        selectedCategory={selectedCategory}
+        onSelectCategory={handleSelectCategory}
+      />
 
-      <div className="px-[90px] pt-[16px]">
+      <div className="md:px-[90px] pt-[16px]">
         <HeroCarousel />
       </div>
 
-      <div className="px-[90px] pt-6">
+      <div className="px-4 md:px-[90px] pt-6">
         <ProvidersGrid
           providers={providers}
           selectedProvider={
@@ -229,7 +233,7 @@ export default function App() {
         />
       </div>
 
-      <div className="min-h-screen px-[150px] py-[10px]">
+      <div className="min-h-screen md:px-[150px] py-[10px]">
         <GameGrid
           games={displayedGames}
           favorites={favorites}
@@ -258,7 +262,7 @@ export default function App() {
             </div>
 
             <button
-              className="mt-2 px-5 py-2 bg-[#00A6FF] text-white rounded"
+              className="mt-2 px-5 py-2 bg-[#00A6FF] hover:bg-blue-600 text-white rounded cursor-pointer"
               onClick={() =>
                 fetchGamesForCategory(
                   currentPage,

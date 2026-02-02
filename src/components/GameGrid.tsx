@@ -23,7 +23,7 @@ export default function GameGrid({
 
   return (
     <div className="px-4 py-2">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
         {games.map((game) => {
           const isFav = favorites.has(game.id);
 
@@ -38,7 +38,7 @@ export default function GameGrid({
                   e.stopPropagation();
                   onToggleFavorite(game.id);
                 }}
-                className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/60 hover:bg-black transition"
+                className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/60 hover:bg-black transition cursor-pointer"
               >
                 {isFav ? (
                   <FaStar className="text-yellow-400" />
@@ -54,7 +54,7 @@ export default function GameGrid({
                   className="w-full aspect-[16/10] object-cover"
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                  <button className="px-5 py-2 text-sm font-semibold text-black bg-yellow-400 rounded-full">
+                  <button className="px-5 py-2 text-sm font-semibold text-black bg-yellow-400 rounded-full cursor-pointer">
                     PLAY
                   </button>
                 </div>

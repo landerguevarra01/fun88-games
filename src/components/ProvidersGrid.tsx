@@ -8,8 +8,7 @@ interface Props {
   onSelectProvider: (providerName: string | null) => void;
 }
 
-const VISIBLE_COUNT = 6;
-const AUTO_SLIDE_DELAY = 2000;
+const AUTO_SLIDE_DELAY = 4000;
 
 export default function ProvidersGrid({
   providers,
@@ -17,21 +16,34 @@ export default function ProvidersGrid({
   onSelectProvider,
 }: Props) {
   const [index, setIndex] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(6); // default desktop
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const items = [...providers, ...providers.slice(0, VISIBLE_COUNT)];
+  // Update visible count on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setVisibleCount(window.innerWidth < 768 ? 3 : 6); // mobile <768px: 3, else 6
+    };
+
+    handleResize(); // initial
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const items = [...providers, ...providers.slice(0, visibleCount)];
   const maxIndex = providers.length;
 
   // Auto slide
   useEffect(() => {
-    if (providers.length <= VISIBLE_COUNT) return;
+    if (providers.length <= visibleCount) return;
 
     const interval = setInterval(() => {
       setIndex((i) => i + 1);
     }, AUTO_SLIDE_DELAY);
 
     return () => clearInterval(interval);
-  }, [providers.length]);
+  }, [providers.length, visibleCount]);
 
   // Reset index when reaching cloned items
   useEffect(() => {
@@ -84,12 +96,12 @@ export default function ProvidersGrid({
       </div>
 
       {/* Slider */}
-      <div className="overflow-hidden">
+      <div className="overflow-hidden py-6">
         <div
           ref={trackRef}
           className="flex transition-transform duration-300 ease-out"
           style={{
-            transform: `translateX(-${(index * 100) / VISIBLE_COUNT}%)`,
+            transform: `translateX(-${(index * 100) / visibleCount}%)`,
           }}
         >
           {items.map((provider, i) => {
@@ -101,9 +113,9 @@ export default function ProvidersGrid({
             return (
               <div
                 key={`${provider.name}-${i}`}
-                className="w-1/6 px-2 shrink-0 cursor-pointer"
+                className={`px-2 shrink-0 cursor-pointer`}
+                style={{ width: `${100 / visibleCount}%` }}
                 onClick={() =>
-                  // ✅ SINGLE SELECT: if already selected, deselect; else select
                   onSelectProvider(isSelected ? null : provider.name)
                 }
               >

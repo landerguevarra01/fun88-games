@@ -31,7 +31,7 @@ const images = [
 
 export default function Footer() {
   return (
-    <div className="relative max-w-screen w-full bg-[#002335] text-[#00A6FF] px-[90px] py-[50px]">
+    <div className="relative max-w-screen w-full bg-[#002335] text-[#00A6FF] md:px-[90px] py-[50px]">
       <div className="my-0">
         <div className="grid grid-cols-[1fr_1fr] gap-5 mb-[50px] px-3 py-0 xl:flex xl:justify-between xl:grid-cols-4 xl:mt-0 xl:mb-10 xl:px-[90px] 2xl:max-w-screen-2xl 2xl:mx-auto 3xl:max-w-screen-3xl 3xl:mx-auto 3xl:p-0 3xl:px-[150px] 4xl:px-[250px]">
           <div>
